@@ -17,7 +17,9 @@ ${"~" * len(section["label"])}
 % endif
 % for commit in section["commits"]:
 <%
-subject = "%s [%s]" % (commit["subject"], commit["author"])
+subject = "%s" % commit["subject"]
+if "author" in commit:
+    subject += " [%s]" % commit["author"]
 entry = indent('\n'.join(textwrap.wrap(subject)),
                        first="- ").strip()
 %>${entry}

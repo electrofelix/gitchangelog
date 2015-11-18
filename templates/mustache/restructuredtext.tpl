@@ -12,7 +12,7 @@
 
 {{/display_label}}
 {{#commits}}
-- {{subject}} [{{author}}]
+- {{subject}}{{#author}} [{{author}}]{{/author}}
 
 {{#body}}
 {{body_indented}}

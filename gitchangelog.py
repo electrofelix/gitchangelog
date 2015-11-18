@@ -714,7 +714,8 @@ def rest_py(data, opts={}):
 
     def render_commit(commit, opts=opts):
         subject = commit["subject"]
-        subject += " [%s]" % (commit["author"], )
+        if "author" in commit:
+            subject += " [%s]" % (commit["author"], )
 
         entry = indent('\n'.join(textwrap.wrap(subject)),
                        first="- ").strip() + "\n\n"
@@ -819,6 +820,7 @@ def changelog(repository,
               unreleased_version_label="unreleased",
               tag_filter_regexp=r"\d+\.\d+(\.\d+)?",
               output_engine=rest_py,
+              include_author=True,
               include_merge=True,
               body_process=lambda x: x,
               subject_process=lambda x: x,
@@ -836,6 +838,7 @@ def changelog(repository,
     :param tag_filter_regexp: regexp to match tags used as version
     :param unreleased_version_label: version label for untagged commits
     :param template_format: format of template to generate the changelog
+    :param include_author: whether to include authors with the commits or not
     :param include_merge: whether to include merge commits in the log or not
     :param body_process: text processing object to apply to body
     :param subject_process: text processing object to apply to subject
@@ -888,11 +891,13 @@ def changelog(repository,
 
             ## Finally storing the commit in the matching section
 
-            sections[matched_section].append({
-                "author": commit.author_name,
+            commit_structure = {
                 "subject": subject_process(commit.subject),
                 "body": body_process(commit.body),
-            })
+            }
+            if include_author:
+                commit_structure["author"] = commit.author_name
+            sections[matched_section].append(commit_structure)
 
         ## Flush current version
         current_version["sections"] = [{"label": k, "commits": sections[k]}
@@ -1030,6 +1035,7 @@ def main():
         tag_filter_regexp=config['tag_filter_regexp'],
         output_engine=config.get("output_engine", rest_py),
         include_merge=config.get("include_merge", True),
+        include_author=config.get("include_author", True),
         body_process=config.get("body_process", noop),
         subject_process=config.get("subject_process", noop),
     )
