@@ -718,16 +718,20 @@ def rest_py(data, opts={}):
             subject += " [%s]" % (commit["author"], )
 
         entry = indent('\n'.join(textwrap.wrap(subject)),
-                       first="- ").strip() + "\n\n"
+                       first="- ").strip() + "\n"
 
         if commit["body"]:
+            entry += "\n"
             entry += indent(commit["body"])
-            entry += "\n\n"
+            entry += "\n"
+
+        if opts.get("space_commit_lines"):
+            entry += "\n"
 
         return entry
 
     return (rest_title(data["title"], char="=") + "\n" +
-            "".join(render_version(version)
+            "\n\n".join(render_version(version)
                     for version in data["versions"]
                     if len(version["sections"]) > 0))
 
@@ -822,6 +826,7 @@ def changelog(repository,
               output_engine=rest_py,
               include_author=True,
               include_merge=True,
+              space_commit_lines=True,
               body_process=lambda x: x,
               subject_process=lambda x: x,
               ):
@@ -840,6 +845,8 @@ def changelog(repository,
     :param template_format: format of template to generate the changelog
     :param include_author: whether to include authors with the commits or not
     :param include_merge: whether to include merge commits in the log or not
+    :param space_commit_lines: whether to include a blank line after each
+        commit
     :param body_process: text processing object to apply to body
     :param subject_process: text processing object to apply to subject
 
@@ -849,6 +856,7 @@ def changelog(repository,
 
     opts = {
         'unreleased_version_label': unreleased_version_label,
+        'space_commit_lines': space_commit_lines,
         }
 
     ## Setting main container of changelog elements
@@ -1036,6 +1044,7 @@ def main():
         output_engine=config.get("output_engine", rest_py),
         include_merge=config.get("include_merge", True),
         include_author=config.get("include_author", True),
+        space_commit_lines=config.get("space_commit_lines", True),
         body_process=config.get("body_process", noop),
         subject_process=config.get("subject_process", noop),
     )
